@@ -24,13 +24,13 @@ type Movie struct {
 	Writers     []string `json:"writers"`
 	Avaliable   int      `json:"avaliable"`
 	Promo       int      `json:"promo"`
-	Fields      []Field  `json:"fields"`
+	Fields      *[]Field `json:"fields"`
 }
 
 type Field struct {
-	Theatre  `json:"theatre"`
-	House    `json:"house"`
-	Movie    `json:"movie"`
+	*Theatre `json:"theatre,omitempty"`
+	*House   `json:"house,omitempty"`
+	*Movie   `json:"movie,omitempty"`
 	FieldId  int    `json:"fieldId"`
 	ShowDate string `json:"showDate"`
 	ShowTime string `json:"showTime"`
@@ -187,10 +187,10 @@ func (f Field) GetMovieFields(tx *sql.Tx, moviesId []int) (fieldsMap map[int][]F
 				return nil, nil, err
 			}
 			f := Field{
-				Theatre{TheatreId: int(theatre_id.Int64)},
-				House{HouseId: int(house_id.Int64),
+				&Theatre{TheatreId: int(theatre_id.Int64)},
+				&House{HouseId: int(house_id.Int64),
 					TheatreId: int(theatre_id.Int64)},
-				Movie{Id: int(movie_id.Int64),
+				&Movie{Id: int(movie_id.Int64),
 					Path:      path.String,
 					Name:      name.String,
 					StartDate: start_date.String,
@@ -247,5 +247,57 @@ func (f Field) UpdateField(fields []Field, tx *sql.Tx) error {
 		}
 	}
 
+	return nil
+}
+
+func (f *Field) SettingPlan() error {
+	stmt_field_seat, err := db.Prepare(`select absolute_x, absolute_y, status
+	from tickets_transaction tt, field_seat fs
+	where tt.transaction_id = fs.transaction_id
+    and (tt.status = 'success' or (tt.status = 'lock' and AddTime(last_update_time, '00:03:00') > now()))
+    and field_id = ?`)
+	if err != nil {
+		return err
+	}
+	defer stmt_field_seat.Close()
+
+	stmt_house, err := db.Prepare(`select fields.house_id, name, width, height
+	from fields, houses
+	where fields.house_id = houses.house_id
+	and field_id = ?`)
+	if err != nil {
+		return err
+	}
+	defer stmt_house.Close()
+
+	var (
+		house_id sql.NullInt64
+		name     sql.NullString
+		width    sql.NullInt64
+		height   sql.NullInt64
+	)
+	if err = stmt_house.QueryRow(f.FieldId).Scan(&house_id, &name, &width, &height); err != nil {
+		return err
+	}
+	f.House = &House{HouseId: int(house_id.Int64)}
+
+	f.House.Find(nil)
+	f.SoldSeat = make([]Seat, 0)
+	if rows, err := stmt_field_seat.Query(f.FieldId); err != nil {
+		return err
+	} else {
+		defer rows.Close()
+		var (
+			absolute_x sql.NullInt64
+			absolute_y sql.NullInt64
+			status     sql.NullString
+		)
+		for rows.Next() {
+			if err = rows.Scan(&absolute_x, &absolute_y, &status); err != nil {
+				return err
+			}
+			f.SoldSeat = append(f.SoldSeat, Seat{int(absolute_x.Int64), int(absolute_y.Int64), status.String})
+		}
+	}
 	return nil
 }

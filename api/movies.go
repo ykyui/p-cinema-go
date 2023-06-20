@@ -21,7 +21,7 @@ func GetAvaliableMovies(r *http.Request) (interface{}, int, error) {
 
 func GetMovieDetail(r *http.Request) (interface{}, int, error) {
 	vars := mux.Vars(r)
-	movies, err := (&rdbms.Movie{Path: vars["moviePath"]}).GetMovies(nil)
+	movies, err := (&rdbms.Movie{Path: vars["moviePath"], Avaliable: -1}).GetMovies(nil)
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -45,9 +45,10 @@ func SearchMovie(r *http.Request) (interface{}, int, error) {
 		movieIds = append(movieIds, v.Id)
 	}
 	if date != "" {
-		fields, _, _ := (&rdbms.Field{ShowDate: date, Theatre: rdbms.Theatre{TheatreId: theatreId}}).GetMovieFields(nil, movieIds)
-		for _, m := range movies {
-			m.Fields = fields[m.Id]
+		fields, _, _ := (&rdbms.Field{ShowDate: date, Theatre: &rdbms.Theatre{TheatreId: theatreId}}).GetMovieFields(nil, movieIds)
+		for i, m := range movies {
+			f := fields[m.Id]
+			movies[i].Fields = &f
 		}
 	}
 	return movies, http.StatusOK, nil
@@ -59,7 +60,7 @@ func GetTheatreField(r *http.Request) (interface{}, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	_, fields, err := (&rdbms.Field{ShowDate: date, Theatre: rdbms.Theatre{TheatreId: theatreId}}).GetMovieFields(nil, []int{})
+	_, fields, err := (&rdbms.Field{ShowDate: date, Theatre: &rdbms.Theatre{TheatreId: theatreId}}).GetMovieFields(nil, []int{})
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -121,7 +122,7 @@ func CreateOrUpdateField(username string, r *http.Request) (interface{}, int, er
 		return nil, http.StatusInternalServerError, err
 	}
 	defer tx.Rollback()
-	f := rdbms.Field{ShowDate: request.Date, Theatre: rdbms.Theatre{TheatreId: request.TheatreId}}
+	f := rdbms.Field{ShowDate: request.Date, Theatre: &rdbms.Theatre{TheatreId: request.TheatreId}}
 	if err = f.UpdateField(request.Fields, tx); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
@@ -129,4 +130,18 @@ func CreateOrUpdateField(username string, r *http.Request) (interface{}, int, er
 		return nil, http.StatusInternalServerError, err
 	}
 	return nil, http.StatusOK, nil
+}
+
+func GetFieldSettingPlan(r *http.Request) (interface{}, int, error) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+	field := rdbms.Field{FieldId: id, Theatre: nil}
+	err = field.SettingPlan()
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+	return field, http.StatusOK, nil
 }
