@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var key = []byte(os.Getenv("JWTKey"))
+var key = []byte(os.Getenv("JWT_KEY"))
 
 func CreateJwt(username string, role int) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

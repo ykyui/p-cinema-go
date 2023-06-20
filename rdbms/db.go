@@ -18,7 +18,7 @@ func InitDb() {
 	if err := godotenv.Load(); err != nil {
 		panic(err)
 	}
-	conn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", os.Getenv("UserName"), os.Getenv("Password"), os.Getenv("Addr"), os.Getenv("Port"), os.Getenv("Database"))
+	conn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", os.Getenv("USER_NAME"), os.Getenv("PASSWORD"), os.Getenv("ADDR"), os.Getenv("PORT"), os.Getenv("DATABASE"))
 	//連接MySQL
 	DB, err := sql.Open("mysql", conn)
 	if err != nil {
@@ -26,9 +26,9 @@ func InitDb() {
 		panic(err)
 	}
 
-	maxLifetime, _ := strconv.Atoi(os.Getenv("MaxLifetime"))
-	maxOpenConns, _ := strconv.Atoi(os.Getenv("MaxOpenConns"))
-	maxIdleConns, _ := strconv.Atoi(os.Getenv("MaxIdleConns"))
+	maxLifetime, _ := strconv.Atoi(os.Getenv("MAX_LIFETIME"))
+	maxOpenConns, _ := strconv.Atoi(os.Getenv("MAX_OPEN_CONNS"))
+	maxIdleConns, _ := strconv.Atoi(os.Getenv("MAX_IDLE_CONNS"))
 	DB.SetConnMaxLifetime(time.Duration(maxLifetime) * time.Second)
 	DB.SetMaxOpenConns(maxOpenConns)
 	DB.SetMaxIdleConns(maxIdleConns)

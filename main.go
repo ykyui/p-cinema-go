@@ -41,11 +41,8 @@ func main() {
 	r.Methods(http.MethodGet).Path("/theatreField").HandlerFunc(service.PublicApi(api.GetTheatreField)).Queries("date", "", "theatreId", "")
 	r.Methods(http.MethodGet).Path("/theatres").HandlerFunc(service.PublicApi(api.GetTheatres))
 	r.Methods(http.MethodGet).Path("/theatreHouses").HandlerFunc(service.PublicApi(api.GetTheatreHouses)).Queries("theatreId", "")
+	r.Methods(http.MethodGet).Path("/fieldSettingPlan/{id}").HandlerFunc(service.PublicApi(api.GetFieldSettingPlan))
 	r.Methods(http.MethodGet).Path("/attachmentHandler/{filename}").HandlerFunc(api.AttachmentHandler)
-	r.Methods(http.MethodGet).Path("/testAuthErr").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		rw.WriteHeader(401)
-		return
-	})
 
 	adminR := r.PathPrefix("/admin").Subrouter()
 	adminR.Methods(http.MethodPost).Path("/login").HandlerFunc(service.PublicApi(admin.Login))
@@ -59,10 +56,10 @@ func main() {
 	adminR.Methods(http.MethodPost).Path("/uploadAttachment").HandlerFunc(service.PrivateApi(api.UploadAttachment))
 
 	r.PathPrefix("/").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		fmt.Println("404::::::: ", r.RequestURI)
 		rw.WriteHeader(http.StatusNotFound)
 	})
-
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("ServiceHost"),
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("SERVICE_HOST"),
 		handlers.CORS(
 			handlers.AllowedHeaders([]string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "X-Requested-With"}),
 			handlers.AllowedOrigins([]string{"*"}),
