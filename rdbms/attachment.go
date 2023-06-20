@@ -15,13 +15,13 @@ func (a *Attachment) UploadAttachment() error {
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare(`insert into attachment (uuid, file, file_type) values (?, ?, ?)`)
+	stmt, err := tx.Prepare(`insert into attachment (uuid, file_type) values (?, ?)`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	if _, err := stmt.Exec(a.UUID, a.File, a.FileType); err != nil {
+	if _, err := stmt.Exec(a.UUID, a.FileType); err != nil {
 		return err
 	}
 
@@ -29,20 +29,18 @@ func (a *Attachment) UploadAttachment() error {
 }
 
 func (a *Attachment) GetAttachment() error {
-	stmt, err := db.Prepare(`select file, file_type from attachment where uuid = ?`)
+	stmt, err := db.Prepare(`select file_type from attachment where uuid = ?`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	var (
-		file      sql.NullString
 		file_type sql.NullString
 	)
-	if err = stmt.QueryRow(a.UUID).Scan(&file, &file_type); err != nil {
+	if err = stmt.QueryRow(a.UUID).Scan(&file_type); err != nil {
 		return err
 	}
-	a.File = []byte(file.String)
 	a.FileType = file_type.String
 	return nil
 }
