@@ -251,7 +251,7 @@ func (f Field) UpdateField(fields []Field, tx *sql.Tx) error {
 }
 
 func (f *Field) SettingPlan() error {
-	stmt_field_seat, err := db.Prepare(`select absolute_x, absolute_y, status
+	stmt_field_seat, err := db.Prepare(`select absolute_x, absolute_y, display_x, display_y, status
 	from tickets_transaction tt, field_seat fs
 	where tt.transaction_id = fs.transaction_id
     and (tt.status = 'success' or (tt.status = 'lock' and AddTime(last_update_time, '00:03:00') > now()))
@@ -290,13 +290,15 @@ func (f *Field) SettingPlan() error {
 		var (
 			absolute_x sql.NullInt64
 			absolute_y sql.NullInt64
+			display_x  sql.NullInt64
+			display_y  sql.NullInt64
 			status     sql.NullString
 		)
 		for rows.Next() {
-			if err = rows.Scan(&absolute_x, &absolute_y, &status); err != nil {
+			if err = rows.Scan(&absolute_x, &absolute_y, &display_x, &display_y, &status); err != nil {
 				return err
 			}
-			f.SoldSeat = append(f.SoldSeat, Seat{int(absolute_x.Int64), int(absolute_y.Int64), status.String})
+			f.SoldSeat = append(f.SoldSeat, Seat{int(absolute_x.Int64), int(absolute_y.Int64), int(display_x.Int64), int(display_y.Int64), status.String})
 		}
 	}
 	return nil

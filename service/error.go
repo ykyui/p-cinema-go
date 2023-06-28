@@ -8,6 +8,7 @@ import (
 var (
 	ErrVarNotFound   = errors.New("ErrVarNotFound")
 	ErrPathDuplicate = errors.New("ErrPathDuplicate")
+	ErrCantBuy       = errors.New("ErrCantBuy")
 )
 
 const (

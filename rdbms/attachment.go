@@ -4,7 +4,6 @@ import "database/sql"
 
 type Attachment struct {
 	UUID     string
-	File     []byte `json:"-"`
 	FileType string `json:"fileType"`
 }
 

@@ -23,6 +23,8 @@ type House struct {
 type Seat struct {
 	X        int    `json:"x"`
 	Y        int    `json:"y"`
+	DisplayX int    `json:"displayX"`
+	DisplayY int    `json:"displayY"`
 	SeatType string `json:"seatType"`
 }
 
@@ -172,7 +174,7 @@ func (h *House) Find(tx *sql.Tx) error {
 			h.Width = int(width.Int64)
 			h.Height = int(height.Int64)
 			if seat_type.Valid {
-				h.SpecialSeat = append(h.SpecialSeat, Seat{int(absolute_x.Int64), int(absolute_y.Int64), seat_type.String})
+				h.SpecialSeat = append(h.SpecialSeat, Seat{int(absolute_x.Int64), int(absolute_y.Int64), 0, 0, seat_type.String})
 			}
 		}
 	}

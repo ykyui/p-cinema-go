@@ -47,7 +47,7 @@ func UploadAttachment(username string, r *http.Request) (interface{}, int, error
 		fmt.Println(err)
 	}
 	f.Write(fileBytes)
-	a := rdbms.Attachment{UUID: id.String(), File: nil, FileType: strings.Split(handler.Filename, ".")[1]}
+	a := rdbms.Attachment{UUID: id.String(), FileType: strings.Split(handler.Filename, ".")[1]}
 	if err = a.UploadAttachment(); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
