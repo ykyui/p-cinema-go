@@ -9,8 +9,8 @@ import (
 type TicketsTransaction struct {
 	TransactionId  int    `json:"transactionId"`
 	FieldId        int    `json:"fieldId"`
-	Status         int    `json:"status"`
-	LastUpdateTime int    `json:"lastUpdateTime"`
+	Status         string `json:"status"`
+	LastUpdateTime string `json:"lastUpdateTime"`
 	Adult          int    `json:"adult"`
 	Student        int    `json:"student"`
 	Child          int    `json:"child"`

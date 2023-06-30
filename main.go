@@ -44,6 +44,9 @@ func main() {
 	r.Methods(http.MethodGet).Path("/fieldSettingPlan/{id}").HandlerFunc(service.PublicApi(api.GetFieldSettingPlan))
 	r.Methods(http.MethodGet).Path("/attachmentHandler/{filename}").HandlerFunc(api.AttachmentHandler)
 
+	transactionR := r.PathPrefix("/transaction").Subrouter()
+	transactionR.Methods(http.MethodPost).Path("/purchaseTickets").HandlerFunc(service.PublicApi(api.PurchaseTickets))
+
 	adminR := r.PathPrefix("/admin").Subrouter()
 	adminR.Methods(http.MethodPost).Path("/login").HandlerFunc(service.PublicApi(admin.Login))
 	adminR.Methods(http.MethodPost).Path("/createOrUpdateTheatre").HandlerFunc(service.PrivateApi(api.CreateOrUpdateTheatre))

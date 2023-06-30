@@ -65,6 +65,41 @@ func PrivateApi(n func(string, *http.Request) (interface{}, int, error)) func(rw
 	}
 }
 
+func TransactionApi(n func(int, *http.Request) (interface{}, int, error)) func(rw http.ResponseWriter, r *http.Request) {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Set("Content-Type", "application/json")
+		token := r.Header.Get("Transaction")
+		transactionId, err := ValidTransactionJwt(token)
+		if err != nil {
+			fmt.Println("token error: ", err)
+			rw.WriteHeader(http.StatusRequestTimeout)
+			resStr, _ := json.Marshal(struct {
+				ErrorMsg string `json:"errorMsg"`
+			}{err.Error()})
+			fmt.Println(string(resStr))
+			fmt.Fprint(rw, string(resStr))
+			return
+		}
+
+		result, statusCode, err := n(transactionId, r)
+		if result == nil {
+			result = struct{}{}
+		}
+		rw.WriteHeader(statusCode)
+		rw.Header().Set("Content-Type", "application/json")
+		if err != nil {
+			resStr, _ := json.Marshal(struct {
+				ErrorMsg string `json:"errorMsg"`
+			}{err.Error()})
+			fmt.Fprint(rw, string(resStr))
+		} else {
+			resStr, _ := json.Marshal(result)
+			fmt.Println(string(resStr))
+			fmt.Fprint(rw, string(resStr))
+		}
+	}
+}
+
 func HandleImage(next func(r *http.Request) (string, error)) func(rw http.ResponseWriter, r *http.Request) {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		result, err := next(r)
