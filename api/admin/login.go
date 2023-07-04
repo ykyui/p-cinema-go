@@ -25,5 +25,7 @@ func Login(r *http.Request) (interface{}, int, error) {
 	if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
-	return struct{ Token string }{token}, http.StatusOK, nil
+	return struct {
+		Token string `json:"token"`
+	}{token}, http.StatusOK, nil
 }

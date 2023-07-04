@@ -2,7 +2,7 @@ package rdbms
 
 import (
 	"database/sql"
-	"p-cinema-go/service"
+	"p-cinema-go/myErr"
 	"strings"
 )
 
@@ -120,7 +120,7 @@ func (m *Movie) CreateOrUpdateMovie(tx *sql.Tx) error {
 	if err = stmt_check_path.QueryRow(m.Path, m.Id).Scan(&c); err != nil {
 		return err
 	} else if c.Int64 != 0 {
-		return service.ErrPathDuplicate
+		return myErr.ErrPathDuplicate
 	}
 
 	if r, err := stmt.Exec(nullInt(m.Id), m.Path, m.Name, m.StartDate, m.Cover, m.Length, m.Ratings, m.Desc, m.Avaliable, m.Promo); err != nil {
@@ -254,7 +254,7 @@ func (f *Field) SettingPlan() error {
 	stmt_field_seat, err := db.Prepare(`select absolute_x, absolute_y, display_x, display_y, status
 	from tickets_transaction tt, field_seat fs
 	where tt.transaction_id = fs.transaction_id
-    and (tt.status = 'success' or (tt.status = 'lock' and AddTime(last_update_time, '00:03:00') > now()))
+    and (tt.status in ('success', 'payment') or (tt.status = 'lock' and AddTime(last_update_time, '00:03:00') > now()))
     and field_id = ?`)
 	if err != nil {
 		return err
