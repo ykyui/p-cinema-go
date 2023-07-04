@@ -45,7 +45,8 @@ func main() {
 	r.Methods(http.MethodGet).Path("/attachmentHandler/{filename}").HandlerFunc(api.AttachmentHandler)
 
 	transactionR := r.PathPrefix("/transaction").Subrouter()
-	transactionR.Methods(http.MethodPost).Path("/purchaseTickets").HandlerFunc(service.PublicApi(api.PurchaseTickets))
+	transactionR.Methods(http.MethodPost).Path("/checkout").HandlerFunc(service.PublicApi(api.Checkout))
+	transactionR.Methods(http.MethodPost).Path("/pay").HandlerFunc(service.TransactionApi(api.Pay))
 
 	adminR := r.PathPrefix("/admin").Subrouter()
 	adminR.Methods(http.MethodPost).Path("/login").HandlerFunc(service.PublicApi(admin.Login))
@@ -56,8 +57,10 @@ func main() {
 	adminR.Methods(http.MethodPost).Path("/createOrUpdateMovie").HandlerFunc(service.PrivateApi(api.CreateOrUpdateMovie))
 	adminR.Methods(http.MethodGet).Path("/movieDetail/{id}").HandlerFunc(service.PrivateApi(api.GetMovieDetailById))
 	adminR.Methods(http.MethodPost).Path("/createOrUpdateField").HandlerFunc(service.PrivateApi(api.CreateOrUpdateField))
-	adminR.Methods(http.MethodPost).Path("/uploadAttachment").HandlerFunc(service.PrivateApi(api.UploadAttachment))
+	adminR.Methods(http.MethodPost).Path("/waitingApprovePayment").HandlerFunc(service.PrivateApi(api.WaitingApprovePayment))
+	adminR.Methods(http.MethodPost).Path("/approvePayment").HandlerFunc(service.PrivateApi(api.ApprovePayment))
 
+	adminR.Methods(http.MethodPost).Path("/uploadAttachment").HandlerFunc(service.PrivateApi(api.UploadAttachment))
 	r.PathPrefix("/").HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println("404::::::: ", r.RequestURI)
 		rw.WriteHeader(http.StatusNotFound)

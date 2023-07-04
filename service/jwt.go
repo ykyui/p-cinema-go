@@ -3,7 +3,6 @@ package service
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -75,8 +74,7 @@ func ValidTransactionJwt(jwtString string) (int, error) {
 		return 0, err
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		id, _ := strconv.Atoi(claims["transactionId"].(string))
-		return id, nil
+		return int(claims["transactionId"].(float64)), nil
 	} else {
 		return 0, err
 	}

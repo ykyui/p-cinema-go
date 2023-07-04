@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"p-cinema-go/myErr"
 	"p-cinema-go/rdbms"
-	"p-cinema-go/service"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -95,8 +95,8 @@ func CreateOrUpdateMovie(username string, r *http.Request) (interface{}, int, er
 		return nil, http.StatusInternalServerError, err
 	}
 	defer tx.Rollback()
-	if err = request.CreateOrUpdateMovie(tx); err == service.ErrPathDuplicate {
-		return nil, service.ErrPathDuplicateResponseStatusCode, err
+	if err = request.CreateOrUpdateMovie(tx); err == myErr.ErrPathDuplicate {
+		return nil, myErr.ErrPathDuplicateResponseStatusCode, err
 	} else if err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
